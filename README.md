@@ -1,8 +1,9 @@
-# NAME OF THE REPO
+# 3tier-webapp
 ## Installation guide
+Soon
 
 ## How to use
+Soon
 
 ## Legal
-
-Legal texts
+GPL Licence 3
