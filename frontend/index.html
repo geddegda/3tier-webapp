@@ -1,0 +1,135 @@
+<!DOCTYPE html lang="en">
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webapp</title>
+    <style>
+        body {
+            background-color: #f4a460;
+        }
+
+        table {
+        background-color: beige;
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 50%;
+        }
+
+        td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+      </style>
+</head>
+
+    <body>
+        <h1>Today's prices</h1>
+        <p>Here are the averages prices for the day</p>
+        <button onclick="document.location='./product.html'">Add a product</button><br><br>
+        <button id="button0" onclick="buildPage()">See list of products</button><br>
+
+        <div id="product-section">
+            <p class="loading">Product data will appear here...</p>
+        </div>
+    </body>
+
+    <script>
+        async function getProducts() {
+            const response = await fetch("https://aqwwjj75luti7yqv3w6gaopxie.apigateway.uk-london-1.oci.customer-oci.com/v1/show_product");
+            const data = await response.json();
+            return data.result;
+        }
+
+        async function editProducts(id) {
+            const nameCell = document.getElementById(`product_name_rowid${id}`);
+            const priceCell = document.getElementById(`product_price_rowid${id}`);
+            const quantityCell = document.getElementById(`product_quantity_rowid${id}`);
+            const button = document.getElementById(`button${id}`);
+
+            nameCell.innerHTML = `<input type="text" id="input_name_${id}" value="${nameCell.innerText}">`;
+            priceCell.innerHTML = `<input type="number" id="input_price_${id}" value="${priceCell.innerText}">`;
+            quantityCell.innerHTML = `<input type="number" id="input_quantity_${id}" value="${quantityCell.innerText}">`;
+
+            button.innerText = "Send"
+            button.onclick = async function() {
+                const updatedName = document.getElementById(`input_name_${id}`).value;
+                const updatedPrice = document.getElementById(`input_price_${id}`).value;
+                const updatedQuantity = document.getElementById(`input_quantity_${id}`).value;
+
+                nameCell.innerText = updatedName;
+                priceCell.innerText = updatedPrice;
+                quantityCell.innerText = updatedQuantity;
+
+                button.innerText = "Edit";
+                button.onclick = function() { editProducts(id); };
+
+                try{
+                    const response = await fetch("https://aqwwjj75luti7yqv3w6gaopxie.apigateway.uk-london-1.oci.customer-oci.com/v1/update_product", {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id: id,
+                            product_name: updatedName,
+                            product_price: updatedPrice,
+                            product_quantity: updatedQuantity
+                        })
+                    });
+
+                if (!response.ok) 
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                console.log("Row successfully updated:", result);
+                } catch (err) {
+                    console.error("Error updating product:", err);
+                    alert("Failed to update the product!");
+                }
+            }
+        }
+
+
+        async function buildPage() {
+            const productSection = document.getElementById('product-section');
+            productSection.innerHTML = "<p>Loading products...</p>";
+
+            const AllProdsArr = await getProducts();
+
+            if (!AllProdsArr || AllProdsArr.length === 0) {
+                productSection.innerHTML = "<p>No products found or error loading data.</p>";
+            return;
+            }
+            let tableHTML = `
+            <br><table>
+                <thead>
+                    <tr>
+                        <th>#id</th>
+                        <th>Product Name</th>
+                        <th>Product Price</th>
+                        <th>Product Quantity</th>
+                        <th>Modify</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `       ;
+            AllProdsArr.forEach(row => {
+            tableHTML += `
+                <tr>
+                    <td id = "rowid${row.id}"> ${row.id} </td>
+                    <td id = "product_name_rowid${row.id}"> ${row.product_name} </td>
+                    <td id = "product_price_rowid${row.id}"> ${row.product_price} </td>
+                    <td id = "product_quantity_rowid${row.id}"> ${row.product_quantity} </td>
+                    <td><button id="button${row.id}" onclick="editProducts(${row.id})">Edit</button><br></td>
+                </tr>
+                `;
+            });
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+        productSection.innerHTML = tableHTML;
+        }         
+    </script>
+</html>

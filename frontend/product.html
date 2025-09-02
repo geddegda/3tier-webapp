@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+    <title>Average prices today</title>
+    <style>
+        body {
+            background-color: #f4a460;
+        }
+    </style>
+</head>
+    <body>
+        <a href="./index.html">Home</a>
+        <p>Edit products</p>
+        <form id="myForm0">
+            <label for="product_name">Product name:</label><br>
+            <input type="text" id="product_name" name="product_name"><br>
+            <label for="product_price">Product price:</label><br>
+            <input type="text" id="product_price" name="product_price"><br>
+            <label for="product_quantity">Quantity:</label><br>
+            <input type="text" id="product_quantity" name="product_quantity"><br><br>
+            <button type="button" onclick="newProduct()">Register</button>
+          </form>
+          <br><br>
+          <div id="jsonOutput"></div>
+          <br><br>
+    </body>
+    <script>
+    function newProduct() {
+        const form = document.getElementById("myForm0");
+        const formData = new FormData(form);                 // grab all form data
+        const jsonData = JSON.stringify(Object.fromEntries(formData)); // convert to object then JSON
+
+        fetch("https://aqwwjj75luti7yqv3w6gaopxie.apigateway.uk-london-1.oci.customer-oci.com/v1/product", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: jsonData
+        })
+        .then(res => res.json())
+        .then(data => console.log("Success:", data))
+        .catch(err => console.error("Error:", err));
+    }
+
+    </script>
+</html>
